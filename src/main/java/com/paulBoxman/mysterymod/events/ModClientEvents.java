@@ -63,7 +63,8 @@ public class ModClientEvents {
 //    }
 
     if (target_block.getExplosionResistance(world, target_block_pos, null) > 600.0f){ return; }
-//    if (!target_block.isSolid()) { return; }
+    if (!target_block.isSolid()) { return; }
+    if (target_block.isLadder(world, target_block_pos, entity)) { return; }
 
     world.removeBlock(target_block_pos, false);
     TNTEntity new_tnt = new TNTEntity(world, target_block_pos.getX() + 0.5f, target_block_pos.getY(), target_block_pos.getZ() + 0.5f, entity);
