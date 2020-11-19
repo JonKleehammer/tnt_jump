@@ -1,10 +1,13 @@
 package com.paulBoxman.mysterymod.events;
 
 import com.paulBoxman.mysterymod.MysteryMod;
+import com.sun.glass.events.KeyEvent;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.MinecraftGame;
 import net.minecraft.client.audio.Sound;
+import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.item.TNTEntity;
 import net.minecraft.entity.monster.ZombieEntity;
@@ -16,6 +19,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.Explosion;
 import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.client.event.GuiScreenEvent;
+import net.minecraftforge.client.event.InputEvent;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
@@ -30,7 +35,11 @@ public class ModClientEvents {
   @SubscribeEvent
   public static void tntOnJump(LivingEvent.LivingJumpEvent event) {
 
-    LivingEntity entity = event.getEntityLiving();
+    if (!Minecraft.getInstance().gameSettings.keyBindJump.isKeyDown()){
+      return;
+    }
+
+      LivingEntity entity = event.getEntityLiving();
 
     if (!(entity instanceof PlayerEntity)) { return; }
     if (entity.isInWater()){ return; }
@@ -63,7 +72,10 @@ public class ModClientEvents {
 //    }
 
     if (target_block.getExplosionResistance(world, target_block_pos, null) > 600.0f){ return; }
-    if (!target_block.isSolid()) { return; }
+//    if (!target_block.isSolid()) { return; }
+    if (target_block.getBlock() == Blocks.WATER) { return; }
+    if (target_block.getBlock() == Blocks.AIR) { return; }
+    if (target_block.getBlock() == Blocks.LAVA) { return; }
     if (target_block.isLadder(world, target_block_pos, entity)) { return; }
 
     world.removeBlock(target_block_pos, false);
@@ -72,6 +84,19 @@ public class ModClientEvents {
     new_tnt.playSound(SoundEvents.ENTITY_TNT_PRIMED, 1f, 1f);
   }
 
+
+//  @SubscribeEvent
+//  public static void jumpKeyDown(InputEvent.KeyInputEvent event) {
+//    if (Minecraft.getInstance().gameSettings.keyBindJump.isKeyDown()){
+//      int x = 1;
+//      MysteryMod.LOGGER.info("KEYDOWN");
+//    }
+//    if (Minecraft.getInstance().gameSettings.keyBindJump.isPressed()){
+//      int x = 2;
+//      MysteryMod.LOGGER.info("KEYPRESSED");
+//
+//    }
+//  }
 
 //  @SubscribeEvent
 //  public static void sunlightDamage(LivingEvent.LivingUpdateEvent event) {
