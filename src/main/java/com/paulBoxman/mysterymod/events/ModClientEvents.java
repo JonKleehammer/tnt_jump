@@ -1,33 +1,19 @@
 package com.paulBoxman.mysterymod.events;
 
 import com.paulBoxman.mysterymod.MysteryMod;
-import com.sun.glass.events.KeyEvent;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.MinecraftGame;
-import net.minecraft.client.audio.Sound;
-import net.minecraft.client.settings.KeyBinding;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.item.TNTEntity;
-import net.minecraft.entity.monster.ZombieEntity;
-import net.minecraft.entity.passive.horse.HorseEntity;
 import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.util.SoundEvent;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.Explosion;
 import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.GuiScreenEvent;
-import net.minecraftforge.client.event.InputEvent;
-import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Mod.EventBusSubscriber(modid = MysteryMod.MOD_ID, bus = Mod.EventBusSubscriber.Bus.FORGE, value = Dist.CLIENT)
 public class ModClientEvents {
@@ -54,34 +40,82 @@ public class ModClientEvents {
     double roundedZ = Math.round(entity.getPosZ() - 0.5f);
 
 //    BlockPos player_block_pos = entity.func_233580_cy_();
-    BlockPos target_block_pos = new BlockPos(roundedX, roundedY - 1, roundedZ);
-    BlockState target_block = world.getBlockState(target_block_pos);
+    BlockPos targetBlockPos = new BlockPos(roundedX, roundedY - 1, roundedZ);
+    BlockState targetBlock = world.getBlockState(targetBlockPos);
 
 //    List<BlockState> targetBlocks = new ArrayList<BlockState>();
 //    for (int i = -1; i <= 1; i++) {
 //      for (int j = -1; j <= 1; j++) {
-//        BlockPos target_block_pos = new BlockPos(player_block_pos.getX() + i,
+//        BlockPos targetBlockPos = new BlockPos(player_block_pos.getX() + i,
 //                roundedY - 1,
 //                player_block_pos.getZ() + j);
-//        BlockState target_block = world.getBlockState(target_block_pos);
+//        BlockState targetBlock = world.getBlockState(targetBlockPos);
 //
-//        if (target_block.isSolid()){
-//          targetBlocks.add(target_block);
+//        if (targetBlock.isSolid()){
+//          targetBlocks.add(targetBlock);
 //        }
 //      }
 //    }
 
-    if (target_block.getExplosionResistance(world, target_block_pos, null) > 600.0f){ return; }
-//    if (!target_block.isSolid()) { return; }
-    if (target_block.getBlock() == Blocks.WATER) { return; }
-    if (target_block.getBlock() == Blocks.AIR) { return; }
-    if (target_block.getBlock() == Blocks.LAVA) { return; }
-    if (target_block.isLadder(world, target_block_pos, entity)) { return; }
+    if (targetBlock.getExplosionResistance(world, targetBlockPos, null) > 600.0f){ return; }
+//    if (!targetBlock.isSolid()) { return; }
+    if (!jumpable(world, targetBlockPos, entity)) {
 
-    world.removeBlock(target_block_pos, false);
-    TNTEntity new_tnt = new TNTEntity(world, target_block_pos.getX() + 0.5f, target_block_pos.getY(), target_block_pos.getZ() + 0.5f, entity);
+      BlockPos entityBlockPos = entity.func_233580_cy_();
+      int targetX = entityBlockPos.getX();
+      int targetZ = entityBlockPos.getZ();
+
+      double xPos = entity.getPosX();
+      double zPos = entity.getPosZ();
+
+      double xOffset = xPos - targetX;
+      double zOffset = zPos - targetZ;
+
+      BlockPos closestBlockPos = null;
+      double closestDistance = 999f;
+
+      for (int i = -1; i <= 1; i++) {
+        for (int j = -1; j <=1; j++){
+          if (i == 0 && j == 0) {
+            continue;
+          }
+          int adjX = targetX + i;
+          int adjZ = targetZ + j;
+          double distance = Math.pow((Math.pow(xPos - adjX, 2) + Math.pow(zPos - adjZ, 2)), 0.5f);
+
+          if (distance < closestDistance) {
+            BlockPos adjBlockPos = new BlockPos(adjX, entityBlockPos.getY() - 1, adjZ);
+            // check if valid block
+            if (jumpable(world, adjBlockPos, entity)) {
+              // new closest jumpable block
+              closestBlockPos = adjBlockPos;
+              closestDistance = distance;
+            }
+          }
+        }
+      }
+
+      if (closestBlockPos == null){
+        return;
+      }
+
+      targetBlock = world.getBlockState(closestBlockPos);
+      targetBlockPos = closestBlockPos;
+    }
+
+    world.removeBlock(targetBlockPos, false);
+    TNTEntity new_tnt = new TNTEntity(world, targetBlockPos.getX() + 0.5f, targetBlockPos.getY(), targetBlockPos.getZ() + 0.5f, entity);
     world.addEntity(new_tnt);
     new_tnt.playSound(SoundEvents.ENTITY_TNT_PRIMED, 1f, 1f);
+  }
+
+  private static boolean jumpable(World world, BlockPos targetBlockPos, LivingEntity entity) {
+    BlockState targetBlock = world.getBlockState(targetBlockPos);
+
+    return !(targetBlock.getBlock() == Blocks.WATER ||
+            targetBlock.getBlock() == Blocks.AIR ||
+            targetBlock.getBlock() == Blocks.LAVA ||
+            targetBlock.isLadder(world, targetBlockPos, entity));
   }
 
 
