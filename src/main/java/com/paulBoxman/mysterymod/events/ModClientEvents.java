@@ -7,11 +7,14 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.entity.LivingEntity;
 import net.minecraft.entity.item.TNTEntity;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.potion.Effect;
+import net.minecraft.potion.EffectInstance;
 import net.minecraft.util.SoundEvents;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.entity.living.LivingEvent;
+import net.minecraftforge.event.entity.living.PotionEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 
@@ -149,4 +152,36 @@ public class ModClientEvents {
 //      player.playSound(SoundEvents.BLOCK_BELL_RESONATE, 0.5f, 0.5f);
 //    }
 //  }
+
+//  @SubscribeEvent
+//  public static void juggernaut(LivingEvent.LivingUpdateEvent event) {
+//
+//    // add logic for looking down to dig slightly down
+//
+//    LivingEntity player = event.getEntityLiving();
+//    if (!(player instanceof PlayerEntity)) { return; }
+//    if (!player.isSprinting()){ return; }
+//    if (player.isSwimming()) { return; }
+//
+//    player.addPotionEffect(new EffectInstance(Effect.get(16), 1000));
+//
+//    World world = player.getEntityWorld();
+//    BlockPos playerPosition = player.func_233580_cy_();
+//
+//
+//    for (int i = -1; i <=1; i++){
+//      for (int j = -1; j <= 1; j++){
+//        for (int k = 0; k <= 2; k++){
+//
+//          BlockPos surroundBlockPos = playerPosition.add(i, k, j);
+//
+//          if (jumpable(world, surroundBlockPos, player)){
+//            world.destroyBlock(surroundBlockPos, true);
+//          }
+//
+//        }
+//      }
+//    }
+//  }
+
 }
